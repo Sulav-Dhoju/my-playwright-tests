@@ -1,31 +1,41 @@
 pipeline {
   agent any
+
   tools {
-    nodejs 'NodeJS18'  // Must match your Global Tool Configuration name
+    nodejs 'NodeJS18'  // Must match Global Tool Configuration
   }
+
   stages {
+
     stage('Checkout') {
       steps {
         checkout scm
       }
     }
+
     stage('Install Dependencies') {
       steps {
-        sh 'npm ci'
-        sh 'npx playwright install --with-deps'
+        bat 'npm ci'
+        bat 'npx playwright install --with-deps'
       }
     }
+
     stage('Run Playwright Tests') {
       steps {
-        sh 'npx playwright test'
+        bat 'npx playwright test'
       }
     }
   }
+
   post {
     always {
-      junit 'test-results/junit-report.xml'
+
+      // JUnit report (safe if file exists)
+      junit allowEmptyResults: true, testResults: 'test-results/**/*.xml'
+
+      // HTML report (Playwright)
       publishHTML(target: [
-        allowMissing: false,
+        allowMissing: true,
         alwaysLinkToLastBuild: true,
         keepAll: true,
         reportDir: 'playwright-report',
